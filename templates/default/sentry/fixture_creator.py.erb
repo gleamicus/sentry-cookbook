@@ -36,13 +36,12 @@ PROJECTS = [
         "team": "<%= @project['team'] %>",
         "owner": "<%= @project['owner'] %>",
         "keys": [<% for @key in @project['keys'] %>{
-            "label": "<%= @key['label'] %>",
             "public_key": "<%= @key['public_key'] %>",
-            "secret_key": "<%= @key['secret_key'] %>",
+            "secret_key": "<%= @key['secret_key'] %>"
         },<% end %>]
     },
     <% end %>
-}
+]
 
 for user in USERS:
     user_instance, created = User.objects.get_or_create(
@@ -63,16 +62,16 @@ for team in TEAMS:
         defaults={"owner": owner})
 
 
-for project in PROJECT:
+for project in PROJECTS:
     owner = User.objects.get(username=project["owner"])
     team = Team.objects.get(name=project["team"])
     project_instance, created = Project.objects.get_or_create(
         name=project['name'],
         team=team,
         defaults={"owner": owner})
-    for key in team['keys']:
+    for key in project['keys']:
         ProjectKey.objects.get_or_create(
             project = project_instance,
             public_key=key['public_key'],
-            defaults={"label": key["label"], "secret_key": key["secret_key"]})
+            defaults={"secret_key": key["secret_key"]})
 
