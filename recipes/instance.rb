@@ -18,6 +18,8 @@ sentry_conf "sentry" do
   group node["sentry"]["group"]
   settings node["sentry"]["settings"]
   superusers node["sentry"]["superusers"]
+  teams node["sentry"]["teams"]
+  projects node["sentry"]["projects"]
 end
 
 node["sentry"]["servers"].each() do |server|

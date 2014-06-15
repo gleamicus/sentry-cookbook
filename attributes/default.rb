@@ -9,7 +9,7 @@
 
 # Global params
 default["sentry"]["version"] = "6.3.0"
-default["sentry"]["superuser_creator_script"] = "/tmp/superuser_creator.py"
+default["sentry"]["fixture_creator_script"] = "/tmp/sentry_fixture_creator.py"
 
 default["sentry"]["include_settings"] = nil
 
@@ -20,6 +20,8 @@ default["sentry"]["virtualenv"] = "/var/www/sentry"
 default["sentry"]["userhome"] = node["sentry"]["virtualenv"]
 default["sentry"]["config"] = "/etc/sentry.conf.py"
 default["sentry"]["superusers"] = []
+default["sentry"]["teams"] = []
+default["sentry"]["projects"] = []
 default["sentry"]["static_dir"] = "#{node["sentry"]["userhome"]}/static"
 
 # Sentry config settings

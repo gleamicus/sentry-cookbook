@@ -1,0 +1,78 @@
+#!<%= @virtualenv %>/bin/python
+# -*- coding: utf-8 -*-
+
+from django.core.management import setup_environ
+from logan.runner import configure_app
+
+configure_app(config_path="<%= @config %>",
+              project="sentry", default_settings="sentry.conf.server")
+
+from sentry.models import Team, Project, ProjectKey, User
+
+
+USERS = [
+    <% for  @user in @superusers %>
+    {
+        "username": "<%= @user['username'] %>",
+        "email": "<%= @user['email'] %>",
+        "password": "<%= @user['password'] %>"
+    },
+    <% end %>
+]
+
+TEAMS = [
+    <% for @team in @teams %>
+    {
+        "name": "<%= @team['name'] %>",
+        "owner": "<%= @team['owner'] %>"
+    },
+    <% end %>
+]
+
+PROJECTS = [
+    <% for @project in @projects %>
+    {
+        "name": "<%= @project['name'] %>",
+        "team": "<%= @project['team'] %>",
+        "owner": "<%= @project['owner'] %>",
+        "keys": [<% for @key in @project['keys'] %>{
+            "label": "<%= @key['label'] %>",
+            "public_key": "<%= @key['public_key'] %>",
+            "secret_key": "<%= @key['secret_key'] %>",
+        },<% end %>]
+    },
+    <% end %>
+}
+
+for user in USERS:
+    user_instance, created = User.objects.get_or_create(
+        username=user['username'],
+        email=user['email'],
+        defaults={"is_superuser": True,
+                  "is_staff": True})
+    if created:
+        user_instance.set_password(user['password'])
+
+    user_instance.save()
+
+
+for team in TEAMS:
+    owner = User.objects.get(username=team["owner"])
+    team_instance, created = Team.objects.get_or_create(
+        name=team['name'],
+        defaults={"owner": owner})
+
+
+for project in PROJECT:
+    owner = User.objects.get(username=project["owner"])
+    team = Team.objects.get(name=project["team"])
+    project_instance, created = Project.objects.get_or_create(
+        name=project['name'],
+        team=team,
+        defaults={"owner": owner})
+    for key in team['keys']:
+        ProjectKey.objects.get_or_create(
+            project = project_instance,
+            public_key=key['public_key'],
+            defaults={"label": key["label"], "secret_key": key["secret_key"]})
+

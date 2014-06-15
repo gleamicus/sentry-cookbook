@@ -141,30 +141,31 @@ define :sentry_conf,
   end
 
   # # Create superusers
-  template node["sentry"]["superuser_creator_script"] do
+  template node["sentry"]["fixture_creator_script"] do
     owner params[:user]
     group params[:group]
 
-    source "sentry/superuser_creator.py.erb"
+    source "sentry/fixture_creator.py.erb"
     variables(:config => config,
               :superusers => params[:superusers] || node["sentry"]["superusers"],
+              :teams => params[:teams] || [],
+              :projects => params[:projects] || [],
               :virtualenv => virtualenv_dir)
     cookbook params[:templates_cookbook]
   end
 
-  # # sentry --config=/etc/sentry.conf.py createsuperuser
-  bash "create sentry superusers" do
+  bash "create sentry fixtures" do
     user params[:user]
     group params[:group]
 
     code <<-EOH
   . #{virtualenv_dir}/bin/activate &&
-  #{virtualenv_dir}/bin/python #{node['sentry']['superuser_creator_script']} &&
+  #{virtualenv_dir}/bin/python #{node['sentry']['fixture_creator_script']} &&
   deactivate
   EOH
   end
 
-  file node['sentry']['superuser_creator_script'] do
+  file node['sentry']['fixture_creator_script'] do
     action :delete
   end
 
