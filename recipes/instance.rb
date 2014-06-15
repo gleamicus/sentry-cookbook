@@ -13,7 +13,7 @@ include_recipe "sentry::user"
 
 # Create sentry instance virtualenv and config
 sentry_conf "sentry" do
-  virtualenv_dir node["sentry"]["virtualenv"]
+  virtualenv node["sentry"]["virtualenv"]
   user node["sentry"]["user"]
   group node["sentry"]["group"]
   settings node["sentry"]["settings"]
