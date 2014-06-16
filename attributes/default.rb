@@ -8,7 +8,7 @@
 #
 
 # Global params
-default["sentry"]["version"] = "6.3.0"
+default["sentry"]["version"] = "6.4.4"
 default["sentry"]["fixture_creator_script"] = "/tmp/sentry_fixture_creator.py"
 
 default["sentry"]["include_settings"] = nil
