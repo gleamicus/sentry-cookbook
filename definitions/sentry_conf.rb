@@ -27,8 +27,7 @@ define :sentry_conf,
        :settings => {} do
 
   Chef::Log.info("Making sentry config for: #{params[:name]}")
-  include_recipe "python::virtualenv"
-  include_recipe "python::pip"
+  include_recipe "python"
   include_recipe "sentry::default"
 
   virtualenv_dir = params[:virtualenv] or node["sentry"]["virtualenv"]

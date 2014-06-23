@@ -8,7 +8,7 @@
 #
 
 # Global params
-default["sentry"]["version"] = "6.3.0"
+default["sentry"]["version"] = "6.4.4"
 default["sentry"]["superuser_creator_script"] = "/tmp/superuser_creator.py"
 
 default["sentry"]["include_settings"] = nil
@@ -31,7 +31,8 @@ default["sentry"]["settings"]["plugins"] = [
                                             "sentry.plugins.sentry_urls",
                                             "sentry.plugins.sentry_useragents"]
 
-default["sentry"]["settings"]["third_party_plugins"] = {}
+# Ex: [ {'name' => 'sentry_jira', 'pypi_name' => 'sentry-jira'} ]
+default["sentry"]["settings"]["third_party_plugins"] = []
 
 # Database settings
 default["sentry"]["settings"]["databases"] = {
@@ -46,7 +47,7 @@ default["sentry"]["settings"]["databases"] = {
 
 default["sentry"]["settings"]["public"] = 'False'
 default["sentry"]["settings"]["prefix"] = "http://sentry.example.com"
-default["sentry"]["settings"]["private_key"] = "generate_you_own_key"
+default["sentry"]["settings"]["private_key"] = "generate_your_own_key"
 
 
   # Server settings
