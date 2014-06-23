@@ -17,6 +17,7 @@ action :init do
             :port => sentry_new_resource.port,
             :host => sentry_new_resource.host,
             :virtualenv => sentry_new_resource.virtualenv,
+            :workers => sentry_new_resource.workers || node["sentry"]["web"]["options"]["workers"],
             :log_folder => log_folder)
   end
 end
