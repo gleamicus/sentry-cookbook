@@ -42,7 +42,7 @@ define :sentry_conf,
   directory virtualenv_dir do
     owner params[:user]
     group params[:group]
-    mode 0777
+    mode 0755
     recursive true
     action :create
   end
@@ -61,9 +61,20 @@ define :sentry_conf,
     owner params[:user]
     group params[:group]
     source params[:template]
-    mode 0777
+    mode 00700
     variables(node["settings_variables"].to_hash)
     cookbook params[:templates_cookbook]
+  end
+
+  directory File.join(virtualenv_dir, '.sentry') do
+    owner params[:user]
+    group params[:group]
+    mode 00700
+    recursive true
+    action :create
+  end
+  link File.join(virtualenv_dir, '.sentry/sentry.conf.py') do
+    to config
   end
 
   # Intstall sentry via pip
@@ -128,43 +139,38 @@ define :sentry_conf,
   end
 
   # # Run migrations
-  # # sentry --config=/etc/sentry.conf.py upgrade
+  # # sentry upgrade
   bash "upgrade sentry" do
     user params[:user]
     group params[:group]
+    environment 'HOME' => virtualenv_dir
     code <<-EOH
   . #{virtualenv_dir}/bin/activate &&
-  #{virtualenv_dir}/bin/python #{virtualenv_dir}/bin/sentry --config=#{config} upgrade --noinput &&
+  #{virtualenv_dir}/bin/python #{virtualenv_dir}/bin/sentry upgrade --noinput &&
   deactivate
   EOH
   end
 
-  # # Create superusers
   template node["sentry"]["superuser_creator_script"] do
-    owner params[:user]
-    group params[:group]
+     owner params[:user]
+     group params[:group]
+     mode 00700
+     source "sentry/superuser_creator.py.erb"
+     variables(:config => config,
+               :superusers => params[:superusers] || node["sentry"]["superusers"],
+               :virtualenv => virtualenv_dir)
+     cookbook params[:templates_cookbook]
+   end
 
-    source "sentry/superuser_creator.py.erb"
-    variables(:config => config,
-              :superusers => params[:superusers] || node["sentry"]["superusers"],
-              :virtualenv => virtualenv_dir)
-    cookbook params[:templates_cookbook]
-  end
-
-  # # sentry --config=/etc/sentry.conf.py createsuperuser
-  bash "create sentry superusers" do
-    user params[:user]
-    group params[:group]
-
-    code <<-EOH
-  . #{virtualenv_dir}/bin/activate &&
-  #{virtualenv_dir}/bin/python #{node['sentry']['superuser_creator_script']} &&
-  deactivate
-  EOH
-  end
-
-  file node['sentry']['superuser_creator_script'] do
-    action :delete
-  end
-
+   # # sentry --config=/etc/sentry.conf.py createsuperuser
+   bash "create sentry superusers" do
+     user params[:user]
+     group params[:group]
+     environment 'HOME' => virtualenv_dir
+     code <<-EOH
+   . #{virtualenv_dir}/bin/activate &&
+   #{virtualenv_dir}/bin/python #{node['sentry']['superuser_creator_script']} &&
+   deactivate
+   EOH
+   end
 end

@@ -1,28 +1,29 @@
 #!<%= @virtualenv %>/bin/python
 # -*- coding: utf-8 -*-
 
-from django.core.management import setup_environ
-from logan.runner import configure_app
 
-configure_app(config_path="<%= @config %>",
-              project="sentry", default_settings="sentry.conf.server")
+# Bootstrap the Sentry environment
+from sentry.utils.runner import configure
+configure()
 
-from django.contrib.auth.models import User
-
+# Do something crazy
+from sentry.models import User
+import django
+from django.db.utils import IntegrityError
 
 users = [
-    <% for  @user in @superusers %>
+    <%- for  @user in @superusers -%>
     ("<%= @user['username'] %>", "<%= @user['email'] %>", "<%= @user['password'] %>"),
-    <% end %>
+    <%- end -%>
     ]
 
 for user in users:
-    user_instance, created = User.objects.get_or_create(
-        username=user[0],
-        email=user[1],
-        defaults={"is_superuser": True,
-                  "is_staff": True})
-    if created:
-        user_instance.set_password(user[2])
-
-    user_instance.save()
+    user_instance = User()
+    user_instance.username = user[0]
+    user_instance.email = user[1]
+    user_instance.is_superuser = True
+    user_instance.set_password(user[2])
+    try:
+        user_instance.save()
+    except django.db.utils.IntegrityError as e:
+        print 'User', user[0], 'already exists, skipping'
