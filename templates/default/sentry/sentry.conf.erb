@@ -59,9 +59,21 @@ EMAIL_USE_TLS = <%= @email['use_tls'] || "False" %>
 SOCIAL_AUTH_CREATE_USERS = <%= @social_auth_create_users %>
 
 # Custom settings
-<% for key, value in @custom_settings %>
-<%= key.upcase %> = <% if value.is_a?(Integer) %><%= value %><% else %>"<%= value %>"<% end %>
-<% end %>
+<%- @custom_settings.each do |key, value| -%>
+<%- next if value.nil? -%>
+<%= key.upcase %> = <%=
+  case value
+  when String
+    "'#{value}'"
+  when TrueClass
+    'True'
+  when FalseClass
+    'False'
+  else
+    value
+  end
+%>
+<%- end -%>
 
 EXTRA_INSTALLED_APPS = [
 <% for item in @plugins %>
